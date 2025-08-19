@@ -229,11 +229,9 @@
             <div class="question" id="question">Click "Start Quiz" to begin your AI knowledge journey!</div>
             
             <div class="options" id="options" style="display: none;">
-                <!-- Options will be populated by JavaScript -->
             </div>
             
             <div class="feedback" id="feedback" style="display: none;">
-                <!-- Feedback will be shown here -->
             </div>
             
             <button class="btn" id="startBtn" onclick="startQuiz()">Start Quiz</button>
@@ -256,9 +254,8 @@
         let timerInterval = null;
         const totalLevels = 10;
         const pointsPerCorrectAnswer = 100;
-        const timeLimit = 30; // seconds per question
+        const timeLimit = 30;
 
-        // Quiz questions about AI definitions
         const questions = [
             {
                 question: "What does 'AI' stand for?",
@@ -367,18 +364,15 @@
             }
         ];
 
-        // Load leaderboard from localStorage
         function loadLeaderboard() {
             const saved = localStorage.getItem('aiAndUsLeaderboard');
             return saved ? JSON.parse(saved) : [];
         }
 
-        // Save leaderboard to localStorage
         function saveLeaderboard(leaderboard) {
             localStorage.setItem('aiAndUsLeaderboard', JSON.stringify(leaderboard));
         }
 
-        // Display leaderboard
         function displayLeaderboard() {
             const leaderboard = loadLeaderboard();
             const leaderboardDiv = document.getElementById('leaderboard');
@@ -387,7 +381,7 @@
             if (leaderboard.length > 0) {
                 leaderboardDiv.style.display = 'block';
                 leaderboardList.innerHTML = leaderboard
-                    .sort((a, b) => b.score - a.score || b.level - a.level) // Sort by score first, then level
+                    .sort((a, b) => b.score - a.score || b.level - a.level)
                     .slice(0, 5)
                     .map((entry, index) => `
                         <div class="leaderboard-item">
@@ -398,23 +392,10 @@
             }
         }
 
-        // Start the quiz
-        function startQuiz() {
-            gameActive = true;
-            currentLevel = 1;
-            currentScore = 0;
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('options').style.display = 'grid';
-            updateScoreDisplay();
-            loadQuestion();
-        }
-
-        // Update score display
         function updateScoreDisplay() {
             document.getElementById('scoreDisplay').textContent = `Score: ${currentScore}`;
         }
 
-        // Start timer for current question
         function startTimer() {
             timeLeft = timeLimit;
             updateTimerDisplay();
@@ -424,24 +405,20 @@
                 timeLeft--;
                 updateTimerDisplay();
                 
-                // Warning animation when time is running out
                 if (timeLeft <= 10) {
                     document.getElementById('timerDisplay').classList.add('timer-warning');
                 }
                 
-                // Time's up!
                 if (timeLeft <= 0) {
                     timeUp();
                 }
             }, 1000);
         }
 
-        // Update timer display
         function updateTimerDisplay() {
             document.getElementById('timerDisplay').textContent = `Time: ${timeLeft}s`;
         }
 
-        // Stop timer
         function stopTimer() {
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -450,7 +427,6 @@
             document.getElementById('timerDisplay').classList.remove('timer-warning');
         }
 
-        // Handle time up (same as wrong answer)
         function timeUp() {
             if (!gameActive) return;
             
@@ -461,13 +437,9 @@
             const options = document.querySelectorAll('.option');
             const feedback = document.getElementById('feedback');
             
-            // Disable all options
             options.forEach(option => option.style.pointerEvents = 'none');
-            
-            // Show correct answer
             options[question.correct].classList.add('correct');
             
-            // Reset score and show feedback
             currentScore = 0;
             updateScoreDisplay();
             
@@ -482,7 +454,16 @@
             document.getElementById('restartBtn').style.display = 'inline-block';
         }
 
-        // Load current question
+        function startQuiz() {
+            gameActive = true;
+            currentLevel = 1;
+            currentScore = 0;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('options').style.display = 'grid';
+            updateScoreDisplay();
+            loadQuestion();
+        }
+
         function loadQuestion() {
             if (currentLevel > totalLevels) {
                 gameComplete();
@@ -493,11 +474,9 @@
             document.getElementById('question').textContent = question.question;
             document.getElementById('levelDisplay').textContent = `Level ${currentLevel}`;
             
-            // Update progress bar
             const progress = ((currentLevel - 1) / totalLevels) * 100;
             document.getElementById('progressBar').style.width = progress + '%';
             
-            // Create option buttons
             const optionsDiv = document.getElementById('options');
             optionsDiv.innerHTML = '';
             
@@ -509,35 +488,28 @@
                 optionsDiv.appendChild(optionDiv);
             });
             
-            // Hide feedback and buttons
             document.getElementById('feedback').style.display = 'none';
             document.getElementById('nextBtn').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'none';
             
-            // Start timer for this question
             startTimer();
         }
 
-        // Handle answer selection
         function selectAnswer(selectedIndex) {
             if (!gameActive) return;
             
-            // Stop the timer
             stopTimer();
             
             const question = questions[currentLevel - 1];
             const options = document.querySelectorAll('.option');
             const feedback = document.getElementById('feedback');
             
-            // Disable all options
             options.forEach(option => option.style.pointerEvents = 'none');
             
             if (selectedIndex === question.correct) {
-                // Correct answer - add points
                 currentScore += pointsPerCorrectAnswer;
                 updateScoreDisplay();
                 
-                // Visual feedback for correct answer
                 options[selectedIndex].classList.add('correct');
                 feedback.className = 'feedback correct';
                 feedback.innerHTML = `
@@ -553,7 +525,6 @@
                 }
                 
             } else {
-                // Wrong answer - restart from beginning, reset score
                 currentScore = 0;
                 updateScoreDisplay();
                 
@@ -571,7 +542,6 @@
             }
         }
 
-        // Go to next question
         function nextQuestion() {
             currentLevel++;
             const options = document.querySelectorAll('.option');
@@ -579,14 +549,12 @@
                 option.style.pointerEvents = 'auto';
                 option.classList.remove('correct', 'incorrect');
             });
-            // Hide timer before loading next question
             document.getElementById('timerDisplay').style.display = 'none';
             loadQuestion();
         }
 
-        // Restart game
         function restartGame() {
-            stopTimer(); // Stop any running timer
+            stopTimer();
             currentLevel = 1;
             currentScore = 0;
             gameActive = true;
@@ -600,9 +568,8 @@
             loadQuestion();
         }
 
-        // Game complete
         function gameComplete() {
-            stopTimer(); // Stop timer when game completes
+            stopTimer();
             document.getElementById('question').innerHTML = `
                 <div class="celebration">🎉 Congratulations! 🎉</div>
                 <br>You've completed all ${totalLevels} levels!<br>
@@ -615,7 +582,6 @@
             document.getElementById('timerDisplay').style.display = 'none';
             document.getElementById('progressBar').style.width = '100%';
             
-            // Save to leaderboard with score
             const playerName = prompt("Enter your name for the leaderboard:") || "Anonymous";
             const leaderboard = loadLeaderboard();
             leaderboard.push({
@@ -627,12 +593,10 @@
             saveLeaderboard(leaderboard);
             displayLeaderboard();
             
-            // Show restart button
             document.getElementById('restartBtn').style.display = 'inline-block';
             document.getElementById('restartBtn').textContent = 'Play Again';
         }
 
-        // Initialize game
         window.addEventListener('load', function() {
             displayLeaderboard();
         });
