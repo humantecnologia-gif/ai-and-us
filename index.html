@@ -1,58 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AI Knowledge Quiz Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background: #f3f3f3;
+    <meta charset="UTF-8">
+    <title>AI Knowledge Quiz Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(120deg, #181c31 0%, #3a436e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', Arial, sans-serif;
+            letter-spacing: 0.01em;
+        }
+        .container {
+            background: rgba(255,255,255,0.17);
+            box-shadow: 0 8px 40px rgba(16,22,40,0.26);
+            border-radius: 22px;
+            max-width: 380px;
+            padding: 2.8em 2em 2em 2em;
+            margin: 2em auto;
+            backdrop-filter: blur(15px);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            position: relative;
+            color: #23263c;
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: 800;
+            margin-bottom: 0.4em;
+            text-align: center;
+            color: #ffffff;
+            letter-spacing: 0.03em;
+            text-shadow: 0 2px 20px #4b6fff7e;
+        }
+        #intro p {
+            color: #f3f6ff;
+            text-align: center;
+            margin-bottom: 2.4em;
+            font-size: 1.15em;
+        }
+        .timer-bar-bg {
+            width: 100%;
+            height: 13px;
+            background: rgba(255,255,255,0.13);
+            border-radius: 12px;
+            margin-bottom: 1.3em;
+            overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4b6fff 0%, #8fe7f7 100%);
+            border-radius: 12px;
+            transition: width 0.25s cubic-bezier(.4,2,.6,1);
+        }
+        .timer-warning .timer-bar {
+            background: linear-gradient(90deg, #ff3c00 0%, #f7e28f 100%);
+            box-shadow: 0 0 14px #ff3c00cc;
+        }
+        .question {
+            font-size: 1.18em;
+            font-weight: 600;
+            color: #252758;
+            margin-bottom: 1.3em;
+            min-height: 48px;
+        }
+        .options {
+            margin-bottom: 0.5em;
+        }
+        .options button {
+            display: block;
+            width: 100%;
+            margin-bottom: 0.8em;
+            padding: 1em;
+            font-size: 1em;
+            font-family: inherit;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4b6fff 0%, #8fe7f7 100%);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #4b6fff1a;
+            transition: 
+                background 0.2s, 
+                transform 0.08s cubic-bezier(.5,2,.7,1.1), 
+                box-shadow 0.2s;
+        }
+        .options button:hover, .options button:focus {
+            background: linear-gradient(90deg, #8fe7f7 0%, #4b6fff 100%);
+            color: #181c31;
+            transform: scale(1.04);
+            box-shadow: 0 2px 16px #8fe7f75a;
+        }
+        .result {
+            font-size: 1.13em;
+            font-weight: 700;
+            color: #1abf6e;
+            text-align: center;
+            min-height: 28px;
+            margin-top: 0.9em;
+            margin-bottom: 0.6em;
+            transition: color 0.25s;
+        }
+        .result.wrong {
+            color: #ff3c00;
+        }
+        .start-btn, .restart-btn {
+            background: linear-gradient(90deg, #1abf6e 0%, #2ae3a6 100%);
+            color: #fff;
+            border: none;
+            padding: 0.9em 2.2em;
+            border-radius: 16px;
+            font-size: 1.08em;
+            font-weight: 800;
+            cursor: pointer;
+            margin: 1.6em auto 0 auto;
+            display: block;
+            box-shadow: 0 2px 12px #1abf6e2b;
+            transition: 
+                background 0.2s, 
+                transform 0.1s cubic-bezier(.4,2,.7,1), 
+                box-shadow 0.18s;
+        }
+        .start-btn:hover, .restart-btn:hover {
+            background: linear-gradient(90deg, #2ae3a6 0%, #1abf6e 100%);
+            color: #181c31;
+            transform: scale(1.06);
+            box-shadow: 0 2px 18px #1abf6e5a;
+        }
+        #outro h2 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 0.5em;
+            letter-spacing: 0.04em;
+        }
+        #finalScore {
+            text-align: center;
+            font-size: 1.15em;
+            font-weight: 700;
+            color: #252758;
+            margin-bottom: 1.2em;
+        }
+        @media (max-width: 500px) {
+            .container {
+                padding: 1.4em 0.6em 1.2em 0.6em;
+                max-width: 99vw;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>AI Knowledge Quiz</h1>
+    <div id="intro">
+        <p>🚀 Welcome! Test your AI knowledge and try to get a perfect score.<br>Are you ready?</p>
+        <button class="start-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+    <div id="quiz" style="display:none;">
+        <div class="timer-bar-bg">
+            <div class="timer-bar" id="timerBar" style="width: 100%"></div>
+        </div>
+        <div class="question" id="questionText"></div>
+        <div class="options" id="options"></div>
+        <div class="result" id="result"></div>
+    </div>
+    <div id="outro" style="display:none;">
+        <h2>Quiz Finished!</h2>
+        <div id="finalScore"></div>
+        <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        question: "What does AI stand for?",
+        options: ["Artificial Intelligence", "Automated Input", "Algorithmic Interface", "Advanced Integration"],
+        answer: 0
+    },
+    {
+        question: "Which of these is an example of AI application?",
+        options: ["Spam Email Filtering", "Word Processing", "File Compression", "Disk Cleanup"],
+        answer: 0
+    },
+    {
+        question: "Who is considered the father of AI?",
+        options: ["Alan Turing", "Bill Gates", "Elon Musk", "Ada Lovelace"],
+        answer: 0
     }
-    .container {
-      background: #fff;
-      max-width: 430px;
-      margin: auto;
-      padding: 2em 2.2em 2.5em 2.2em;
-      border-radius: 13px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+];
+
+const timeLimit = 30; // seconds
+let currentQuestion = 0;
+let score = 0;
+let timeLeft = timeLimit;
+let timerInterval = null;
+
+function startQuiz() {
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('outro').style.display = 'none';
+    document.getElementById('quiz').style.display = '';
+    currentQuestion = 0;
+    score = 0;
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if (currentQuestion >= questions.length) {
+        endQuiz();
+        return;
     }
-    .timer-display {
-      font-size: 1.3em;
-      margin-bottom: 0.5em;
-      background: #222;
-      color: #fff;
-      display: inline-block;
-      padding: 0.17em 0.9em;
-      border-radius: 20px;
-      letter-spacing: 1px;
-      min-width: 92px;
-      text-align: center;
+    const q = questions[currentQuestion];
+    document.getElementById('questionText').textContent = q.question;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = '';
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(idx);
+        optionsDiv.appendChild(btn);
+    });
+    document.getElementById('result').textContent = '';
+    document.getElementById('result').classList.remove('wrong');
+    startTimer();
+}
+
+function checkAnswer(selected) {
+    clearInterval(timerInterval);
+    setTimerBar(0);
+    const q = questions[currentQuestion];
+    if (selected === q.answer) {
+        document.getElementById('result').textContent = "✅ Correct!";
+        document.getElementById('result').classList.remove('wrong');
+        score++;
+    } else {
+        document.getElementById('result').textContent = `❌ Wrong! The correct answer was "${q.options[q.answer]}".`;
+        document.getElementById('result').classList.add('wrong');
     }
-    .timer-warning {
-      background: #e53935;
-      animation: pulse .7s infinite alternate;
-    }
-    @keyframes pulse {
-      from { box-shadow: 0 0 10px #e53935; }
-      to   { box-shadow: 0 0 24px #e53935; }
-    }
-    .timer-bar {
-      height: 7px;
-      width: 100%;
-      background: #e0e0e0;
-      border-radius: 3px;
-      margin-bottom: 1em;
-      overflow: hidden;
-    }
-    #timerBarInner {
-      height: 100%;
-      width: 100%;
-      background: #2196f3;
-      transition: width 1s linear;
-    }
-    .progress-bar {
-      margin-top: .5em;
-      margin-bottom: 1.3em;
-      height
-
+    disableOptions();
+    setTimeout(() => {
+        currentQuestion++;
+        loadQuestion();
+    }, 1300);
+}
+
+function disableOptions() {
+    const btns = document.querySelectorAll('.options button');
+    btns.forEach(btn => btn.disabled = true);
+}
+
+function startTimer() {
+    timeLeft = timeLimit;
+    setTimerBar(100);
+    const timerBarBg = document.querySelector('.timer-bar-bg');
+    timerBarBg.classList.remove('timer-warning');
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        setTimerBar((timeLeft/timeLimit)*100);
+        if (timeLeft <= 10) {
+            timerBarBg.classList.add('timer-warning');
+        }
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            setTimerBar(0);
+            document.getElementById('result').textContent = "⏰ Time's up!";
+            document.getElementById('result').classList.add('wrong');
+            disableOptions();
+            setTimeout(() => {
+                currentQuestion++;
+                loadQuestion();
+            }, 1200);
+        }
+    }, 1000);
+}
+
+function setTimerBar(percent) {
+    const timerBar = document.getElementById('timerBar');
+    timerBar.style.width = percent + '%';
+}
+
+function endQuiz() {
+    document.getElementById('quiz').style.display = 'none';
+    document.getElementById('outro').style.display = '';
+    document.getElementById('finalScore').textContent = 
+        `You scored ${score} out of ${questions.length}!`;
+}
+
+function restartQuiz() {
+    startQuiz();
+}
+</script>
+</body>
+</html>
