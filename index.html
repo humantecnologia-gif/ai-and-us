@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI and US</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .level-display {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            display: inline-block;
+        }
+
+        .question-container {
+            margin: 30px 0;
+        }
+
+        .question {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .option.correct {
+            background: rgba(46, 204, 113, 0.3);
+            border-color: #2ecc71;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .option.incorrect {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+            animation: incorrectShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.1em;
+        }
+
+        .feedback.correct {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid #2ecc71;
+        }
+
+        .feedback.incorrect {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .leaderboard {
+            text-align: left;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .celebration {
+            animation: celebrate 2s ease infinite;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(2deg); }
+            75% { transform: scale(1.1) rotate(-2deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">🤖 AI and US</h1>
+        <p class="subtitle">Test your understanding of AI definitions and concepts</p>
+        
+        <div class="level-display" id="levelDisplay">Level 1</div>
+        
+        <div class="level-display" id="scoreDisplay" style="background: rgba(46, 204, 113, 0.3); border: 2px solid #2ecc71;">Score: 0</div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div class="question-container" id="questionContainer">
+            <div class="question" id="question">Click "Start Quiz" to begin your AI knowledge journey!</div>
+            
+            <div class="options" id="options" style="display: none;">
+                <!-- Options will be populated by JavaScript -->
+            </div>
+            
+            <div class="feedback" id="feedback" style="display: none;">
+                <!-- Feedback will be shown here -->
+            </div>
+            
+            <button class="btn" id="startBtn" onclick="startQuiz()">Start Quiz</button>
+            <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">Next Level</button>
+            <button class="btn" id="restartBtn" onclick="restartGame()" style="display: none;">Try Again</button>
+        </div>
+
+        <div class="leaderboard" id="leaderboard" style="display: none;">
+            <h3>🏆 Top Players</h3>
+            <div id="leaderboardList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentLevel = 1;
+        let currentScore = 0;
+        let gameActive = false;
+        const totalLevels = 10;
+        const pointsPerCorrectAnswer = 100;
+
+        // Quiz questions about AI definitions
+        const questions = [
+            {
+                question: "What does 'AI' stand for?",
+                options: ["Automated Intelligence", "Artificial Intelligence", "Advanced Integration", "Algorithmic Innovation"],
+                correct: 1,
+                explanation: "AI stands for Artificial Intelligence - the simulation of human intelligence in machines."
+            },
+            {
+                question: "What is Machine Learning?",
+                options: [
+                    "A type of computer virus",
+                    "A subset of AI that learns from data without explicit programming",
+                    "A programming language",
+                    "A type of robot"
+                ],
+                correct: 1,
+                explanation: "Machine Learning is a subset of AI that enables systems to learn and improve from data without being explicitly programmed."
+            },
+            {
+                question: "What is a Neural Network?",
+                options: [
+                    "A computer network",
+                    "A computing system inspired by biological neural networks",
+                    "A type of internet connection",
+                    "A social media platform"
+                ],
+                correct: 1,
+                explanation: "A Neural Network is a computing system inspired by biological neural networks that make up animal brains."
+            },
+            {
+                question: "What is Deep Learning?",
+                options: [
+                    "Learning underwater",
+                    "A subset of machine learning using neural networks with multiple layers",
+                    "Studying very hard",
+                    "A type of meditation"
+                ],
+                correct: 1,
+                explanation: "Deep Learning is a subset of machine learning that uses neural networks with multiple layers to analyze data."
+            },
+            {
+                question: "What is Natural Language Processing (NLP)?",
+                options: [
+                    "A way to process natural foods",
+                    "AI's ability to understand and generate human language",
+                    "A type of programming language",
+                    "A method of language translation only"
+                ],
+                correct: 1,
+                explanation: "NLP is a branch of AI that helps computers understand, interpret, and generate human language."
+            },
+            {
+                question: "What is Computer Vision?",
+                options: [
+                    "A type of eye examination",
+                    "AI's ability to interpret and understand visual information",
+                    "A computer monitor",
+                    "A video game"
+                ],
+                correct: 1,
+                explanation: "Computer Vision is AI's ability to interpret and understand visual information from the world around us."
+            },
+            {
+                question: "What is an Algorithm?",
+                options: [
+                    "A type of mathematics",
+                    "A step-by-step procedure for solving a problem",
+                    "A computer programmer",
+                    "A type of software"
+                ],
+                correct: 1,
+                explanation: "An Algorithm is a step-by-step procedure or formula for solving a problem or completing a task."
+            },
+            {
+                question: "What is Big Data?",
+                options: [
+                    "Large files on a computer",
+                    "Extremely large datasets that require special tools to analyze",
+                    "A type of database",
+                    "Important information"
+                ],
+                correct: 1,
+                explanation: "Big Data refers to extremely large datasets that are too complex for traditional data processing applications."
+            },
+            {
+                question: "What is Artificial General Intelligence (AGI)?",
+                options: [
+                    "A type of AI that can only do one task",
+                    "AI that can understand and learn any intellectual task that humans can",
+                    "A robot general",
+                    "Advanced gaming intelligence"
+                ],
+                correct: 1,
+                explanation: "AGI refers to AI that can understand, learn, and apply intelligence across a wide range of tasks like humans."
+            },
+            {
+                question: "What is the Turing Test?",
+                options: [
+                    "A programming exam",
+                    "A test to determine if a machine can exhibit intelligent behavior indistinguishable from humans",
+                    "A type of computer virus scan",
+                    "A math test for computers"
+                ],
+                correct: 1,
+                explanation: "The Turing Test is a test to determine whether a machine can exhibit intelligent behavior equivalent to human intelligence."
+            }
+        ];
+
+        // Load leaderboard from localStorage
+        function loadLeaderboard() {
+            const saved = localStorage.getItem('aiAndUsLeaderboard');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // Save leaderboard to localStorage
+        function saveLeaderboard(leaderboard) {
+            localStorage.setItem('aiAndUsLeaderboard', JSON.stringify(leaderboard));
+        }
+
+        // Display leaderboard
+        function displayLeaderboard() {
+            const leaderboard = loadLeaderboard();
+            const leaderboardDiv = document.getElementById('leaderboard');
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (leaderboard.length > 0) {
+                leaderboardDiv.style.display = 'block';
+                leaderboardList.innerHTML = leaderboard
+                    .sort((a, b) => b.score - a.score || b.level - a.level)
+                    .slice(0, 5)
+                    .map((entry, index) => `
+                        <div class="leaderboard-item">
+                            <span>${index + 1}. ${entry.name}</span>
+                            <span>Level ${entry.level} - ${entry.score || 0} pts</span>
+                        </div>
+                    `).join('');
+            }
+        }
+
+        // Update score display
+        function updateScoreDisplay() {
+            document.getElementById('scoreDisplay').textContent = `Score: ${currentScore}`;
+        }
+
+        // Start the quiz
+        function startQuiz() {
+            gameActive = true;
+            currentLevel = 1;
+            currentScore = 0;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('options').style.display = 'grid';
+            updateScoreDisplay();
+            loadQuestion();
+        }
+
+        // Load current question
+        function loadQuestion() {
+            if (currentLevel > totalLevels) {
+                gameComplete();
+                return;
+            }
+
+            const question = questions[currentLevel - 1];
+            document.getElementById('question').textContent = question.question;
+            document.getElementById('levelDisplay').textContent = `Level ${currentLevel}`;
+            
+            // Update progress bar
+            const progress = ((currentLevel - 1) / totalLevels) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Create option buttons
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectAnswer(index);
+                optionsDiv.appendChild(optionDiv);
+            });
+            
+            // Hide feedback and buttons
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+        }
+
+        // Handle answer selection
+        function selectAnswer(selectedIndex) {
+            if (!gameActive) return;
+            
+            const question = questions[currentLevel - 1];
+            const options = document.querySelectorAll('.option');
+            const feedback = document.getElementById('feedback');
+            
+            // Disable all options
+            options.forEach(option => option.style.pointerEvents = 'none');
+            
+            if (selectedIndex === question.correct) {
+                // Correct answer - add points
+                currentScore += pointsPerCorrectAnswer;
+                updateScoreDisplay();
+                
+                // Visual feedback for correct answer
+                options[selectedIndex].classList.add('correct');
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = `
+                    <strong>✅ Correct! +${pointsPerCorrectAnswer} points</strong><br>
+                    ${question.explanation}
+                `;
+                feedback.style.display = 'block';
+                
+                if (currentLevel < totalLevels) {
+                    document.getElementById('nextBtn').style.display = 'inline-block';
+                } else {
+                    setTimeout(gameComplete, 1500);
+                }
+                
+            } else {
+                // Wrong answer - restart from beginning, reset score
+                currentScore = 0;
+                updateScoreDisplay();
+                
+                options[selectedIndex].classList.add('incorrect');
+                options[question.correct].classList.add('correct');
+                feedback.className = 'feedback incorrect';
+                feedback.innerHTML = `
+                    <strong>❌ Wrong Answer! Score reset to 0</strong><br>
+                    ${question.explanation}<br><br>
+                    <strong>You must start over from Level 1!</strong>
+                `;
+                feedback.style.display = 'block';
+                document.getElementById('restartBtn').style.display = 'inline-block';
+                gameActive = false;
+            }
+        }
+
+        // Go to next question
+        function nextQuestion() {
+            currentLevel++;
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'auto';
+                option.classList.remove('correct', 'incorrect');
+            });
+            loadQuestion();
+        }
+
+        // Restart game
+        function restartGame() {
+            currentLevel = 1;
+            currentScore = 0;
+            gameActive = true;
+            updateScoreDisplay();
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'auto';
+                option.classList.remove('correct', 'incorrect');
+            });
+            loadQuestion();
+        }
+
+        // Game complete
+        function gameComplete() {
+            document.getElementById('question').innerHTML = `
+                <div class="celebration">🎉 Congratulations! 🎉</div>
+                <br>You've completed all ${totalLevels} levels!<br>
+                <strong>Final Score: ${currentScore} points</strong><br>
+                <strong>You are now an AI Knowledge Expert!</strong>
+            `;
+            document.getElementById('options').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('progressBar').style.width = '100%';
+            
+            // Save to leaderboard with score
+            const playerName = prompt("Enter your name for the leaderboard:") || "Anonymous";
+            const leaderboard = loadLeaderboard();
+            leaderboard.push({
+                name: playerName,
+                level: totalLevels,
+                score: currentScore,
+                timestamp: new Date().toISOString()
+            });
+            saveLeaderboard(leaderboard);
+            displayLeaderboard();
+            
+            // Show restart button
+            document.getElementById('restartBtn').style.display = 'inline-block';
+            document.getElementById('restartBtn').textContent = 'Play Again';
+        }
+
+        // Initialize game
+        window.addEventListener('load', function() {
+            displayLeaderboard();
+        });
+    </script>
+</body>
+</html>
