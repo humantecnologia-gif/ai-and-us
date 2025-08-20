@@ -1,280 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI and US</title>
-    <!-- Keep your style section as it is, since it doesn't affect game logic -->
-    <style>
-        /* ... [keep your existing CSS unchanged] ... */
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Knowledge Quiz Game</title>
+  <style>
+    html,body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f6f6f6;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #222;
+    }
+    .container {
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 24px 12px 32px 12px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 6px 30px 0 #0001;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.1em;
+      margin: 0 0 10px 0;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      text-align: center;
+      margin-bottom: 18px;
+      color: #666;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .status {
+      font-size: 1em;
+      background: #e3eaff;
+      padding: 4px 12px;
+      border-radius: 8px;
+      margin: 0 2px;
+      min-width: 60px;
+      text-align: center;
+    }
+    .status.timer {
+      background: #fffbe4;
+      color: #c97c16;
+      font-weight: bold;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 13px;
+      background: #e5e5e5;
+      border-radius: 7px;
+      margin: 8px 0 14px 0;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      background: #3282e5;
+      width: 0%;
+      transition: width 0.4s;
+    }
+    .question {
+      font-size: 1.1em;
+      margin: 16px 0 8px 0;
+      font-weight: 500;
+      min-height: 55px;
+      text-align: center;
+      word-break: break-word;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .option-btn {
+      background: #f5f8ff;
+      border: 2px solid #3282e5;
+      border-radius: 10px;
+      font-size: 1em;
+      padding: 12px 8px;
+      cursor: pointer;
+      transition: background 0.25s, border 0.2s;
+      outline: none;
+    }
+    .option-btn.correct {
+      background: #c9f7d4;
+      border-color: #12bb5b;
+      color: #16743a;
+    }
+    .option-btn.incorrect {
+      background: #ffeaea;
+      border-color: #e74c3c;
+      color: #d61b1b;
+    }
+    .option-btn:disabled {
+      cursor: default;
+      opacity: 0.87;
+    }
+    .feedback {
+      min-height: 38px;
+      text-align: center;
+      margin: 7px 0 12px 0;
+      font-size: 1em;
+    }
+    .feedback.correct {
+      color: #16743a;
+    }
+    .feedback.incorrect {
+      color: #d61b1b;
+    }
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .main-btn {
+      background: #3282e5;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 26px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 4px #0002;
+      transition: background 0.2s;
+    }
+    .main-btn:hover, .main-btn:focus {
+      background: #2461ac;
+    }
+    .leaderboard {
+      margin-top: 24px;
+      background: #f3f6fa;
+      padding: 12px;
+      border-radius: 10px;
+    }
+    .leaderboard h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.1em;
+      text-align: center;
+    }
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.98em;
+      padding: 2px 0;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 12px 2vw 18px 2vw;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100vh;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+      .subtitle {
+        font-size: 1em;
+      }
+      .question {
+        font-size: 1em;
+        min-height: 40px;
+      }
+      .main-btn, .option-btn {
+        font-size: 1em;
+        padding: 10px 8px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1 class="title">🤖 AI and US</h1>
-        <p class="subtitle">Test your understanding of AI definitions and concepts</p>
-        <div class="level-display" id="levelDisplay">Level 1</div>
-        <div class="level-display" id="scoreDisplay" style="background: rgba(46, 204, 113, 0.3); border: 2px solid #2ecc71;">Score: 0</div>
-        <div class="timer-display" id="timerDisplay" style="display: none;">Time: 30s</div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
-        </div>
-        <div class="question-container" id="questionContainer">
-            <div class="question" id="question">Click "Start Quiz" to begin your AI knowledge journey!</div>
-            <div class="options" id="options" style="display: none;"></div>
-            <div class="feedback" id="feedback" style="display: none;"></div>
-            <button class="btn" id="startBtn">Start Quiz</button>
-            <button class="btn" id="nextBtn" style="display: none;">Next Level</button>
-            <button class="btn" id="restartBtn" style="display: none;">Try Again</button>
-        </div>
-        <div class="leaderboard" id="leaderboard" style="display: none;">
-            <h3>🏆 Top Players</h3>
-            <div id="leaderboardList"></div>
-        </div>
+  <div class="container">
+    <h1>🤖 AI and US</h1>
+    <div class="subtitle">Test your understanding of AI definitions and concepts</div>
+    <div class="status-row">
+      <div id="levelStatus" class="status">Level 1</div>
+      <div id="scoreStatus" class="status">Score: 0</div>
+      <div id="timerStatus" class="status timer" style="display:none;">30s</div>
     </div>
-    <script>
-        // Polyfill for localStorage if not available
-        if (!window.localStorage) {
-            window.localStorage = {
-                _data: {},
-                setItem: function(id, val) { this._data[id] = String(val); },
-                getItem: function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : undefined; },
-                removeItem: function(id) { delete this._data[id]; },
-                clear: function() { this._data = {}; }
-            };
+    <div class="progress-bar"><div id="progress" class="progress"></div></div>
+    <div id="question" class="question">Click "Start Quiz" to begin!</div>
+    <div id="options" class="options" style="display:none;"></div>
+    <div id="feedback" class="feedback"></div>
+    <div class="btn-row">
+      <button id="startBtn" class="main-btn">Start Quiz</button>
+      <button id="nextBtn" class="main-btn" style="display:none;">Next</button>
+      <button id="restartBtn" class="main-btn" style="display:none;">Restart</button>
+    </div>
+    <div class="leaderboard" id="leaderboard" style="display:none;">
+      <h3>🏆 Leaderboard</h3>
+      <div id="leaderboardList" class="leaderboard-list"></div>
+    </div>
+  </div>
+  <script>
+    // --- Questions Array ---
+    const questions = [
+      {
+        question: "What is Artificial Intelligence (AI)?",
+        options: [
+          "A system that can only store data",
+          "A system that mimics human intelligence to perform tasks",
+          "A tool for sending emails automatically",
+          "A type of computer virus"
+        ],
+        correct: 1,
+        explanation: "AI is the simulation of human intelligence in machines programmed to think and learn."
+      },
+      {
+        question: "What is Machine Learning?",
+        options: [
+          "A machine that learns to dance",
+          "A set of rules for computers to follow",
+          "A subset of AI where systems learn from data",
+          "A programming language"
+        ],
+        correct: 2,
+        explanation: "Machine Learning lets computers learn from data and make predictions or decisions."
+      },
+      {
+        question: "Which of the following is NOT an example of AI?",
+        options: [
+          "Face recognition in smartphones",
+          "Spam filters in email",
+          "A standard calculator",
+          "Voice assistants like Siri or Alexa"
+        ],
+        correct: 2,
+        explanation: "A standard calculator follows fixed rules and does not use AI."
+      },
+      {
+        question: "What is 'training data' in AI?",
+        options: [
+          "Data used to teach an AI model",
+          "A fitness program for robots",
+          "Encrypted messages",
+          "A backup of important files"
+        ],
+        correct: 0,
+        explanation: "Training data is used to teach AI models to recognize patterns and make decisions."
+      },
+      {
+        question: "What does 'NLP' stand for?",
+        options: [
+          "Natural Language Processing",
+          "Neural Logic Protocol",
+          "National Learning Program",
+          "Networked Language Platform"
+        ],
+        correct: 0,
+        explanation: "NLP means Natural Language Processing, helping computers understand human language."
+      },
+      {
+        question: "Which is a benefit of AI?",
+        options: [
+          "It never makes mistakes",
+          "It can automate repetitive tasks",
+          "It works without electricity",
+          "It can replace all humans"
+        ],
+        correct: 1,
+        explanation: "AI can automate repetitive tasks, freeing humans for creative work."
+      },
+      {
+        question: "What is 'bias' in AI?",
+        options: [
+          "A type of programming bug",
+          "Unfairness in how an AI system makes decisions",
+          "A fast computer chip",
+          "A way to speed up training"
+        ],
+        correct: 1,
+        explanation: "Bias in AI means the model makes unfair or prejudiced decisions due to bad data or design."
+      },
+      {
+        question: "Which is a common use of AI in daily life?",
+        options: [
+          "Weather prediction",
+          "Predicting earthquakes instantly",
+          "Fixing broken touch screens",
+          "Growing food in space"
+        ],
+        correct: 0,
+        explanation: "AI is used for weather prediction, voice assistants, recommendations, and more."
+      },
+      {
+        question: "What is 'deep learning'?",
+        options: [
+          "A type of underwater robot",
+          "A method in AI using layered neural networks",
+          "A way to memorize facts",
+          "A slow learning process"
+        ],
+        correct: 1,
+        explanation: "Deep learning uses neural networks with many layers for complex tasks like image and speech recognition."
+      },
+      {
+        question: "What should be considered when using AI?",
+        options: [
+          "Ethical implications and fairness",
+          "Its favorite color",
+          "How often it blinks",
+          "If it can swim"
+        ],
+        correct: 0,
+        explanation: "It's important to consider ethics, bias, and fairness when designing and using AI."
+      }
+    ];
+
+    // --- Game State ---
+    let currentLevel = 0;
+    let currentScore = 0;
+    let timer = null;
+    let timeLeft = 30;
+    let gameActive = false;
+    const totalLevels = questions.length;
+
+    // --- DOM Elements ---
+    const levelStatus = document.getElementById('levelStatus');
+    const scoreStatus = document.getElementById('scoreStatus');
+    const timerStatus = document.getElementById('timerStatus');
+    const progress = document.getElementById('progress');
+    const questionDiv = document.getElementById('question');
+    const optionsDiv = document.getElementById('options');
+    const feedbackDiv = document.getElementById('feedback');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const leaderboardDiv = document.getElementById('leaderboard');
+    const leaderboardList = document.getElementById('leaderboardList');
+
+    // --- Event Listeners ---
+    startBtn.onclick = startQuiz;
+    nextBtn.onclick = nextLevel;
+    restartBtn.onclick = restartQuiz;
+
+    // --- Helper Functions ---
+    function show(el) { el.style.display = ''; }
+    function hide(el) { el.style.display = 'none'; }
+
+    function setStatus() {
+      levelStatus.textContent = `Level ${currentLevel+1}`;
+      scoreStatus.textContent = `Score: ${currentScore}`;
+      let pct = (currentLevel / totalLevels) * 100;
+      progress.style.width = pct + '%';
+    }
+
+    function startQuiz() {
+      currentLevel = 0;
+      currentScore = 0;
+      gameActive = true;
+      setStatus();
+      hide(startBtn);
+      hide(restartBtn);
+      hide(nextBtn);
+      show(optionsDiv);
+      feedbackDiv.textContent = '';
+      show(questionDiv);
+      show(progress.parentNode);
+      show(levelStatus);
+      show(scoreStatus);
+      hide(leaderboardDiv);
+      nextQuestion();
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel >= totalLevels) {
+        endGame();
+      } else {
+        nextQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      setStatus();
+      feedbackDiv.textContent = '';
+      hide(nextBtn);
+      hide(restartBtn);
+      const q = questions[currentLevel];
+      questionDiv.textContent = q.question;
+      optionsDiv.innerHTML = '';
+      q.options.forEach((text, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = text;
+        btn.onclick = () => selectAnswer(idx);
+        btn.setAttribute('tabindex', 0);
+        optionsDiv.appendChild(btn);
+      });
+      show(optionsDiv);
+      timeLeft = 30;
+      timerStatus.textContent = `${timeLeft}s`;
+      timerStatus.style.display = '';
+      runTimer();
+    }
+
+    function runTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        timerStatus.textContent = `${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          handleTimeout();
         }
+      }, 1000);
+    }
 
-        let currentLevel = 1;
-        let currentScore = 0;
-        let gameActive = false;
-        let timeLeft = 30;
-        let timerInterval = null;
-        const totalLevels = 10;
-        const pointsPerCorrectAnswer = 100;
-        const timeLimit = 30;
+    function selectAnswer(idx) {
+      if (!gameActive) return;
+      clearInterval(timer);
+      const q = questions[currentLevel];
+      const correct = q.correct;
+      const btns = optionsDiv.querySelectorAll('button');
+      btns.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === correct) btn.classList.add('correct');
+        else if (i === idx) btn.classList.add('incorrect');
+      });
+      if (idx === correct) {
+        currentScore += 100;
+        feedbackDiv.textContent = "✅ Correct! " + q.explanation;
+        feedbackDiv.className = 'feedback correct';
+        show(nextBtn);
+      } else {
+        currentScore = 0;
+        feedbackDiv.textContent = "❌ Wrong! " + q.explanation + ' (You must restart!)';
+        feedbackDiv.className = 'feedback incorrect';
+        show(restartBtn);
+      }
+      setStatus();
+      timerStatus.style.display = 'none';
+    }
 
-        const questions = [
-            /* ... [keep your questions array unchanged] ... */
-        ];
+    function handleTimeout() {
+      const q = questions[currentLevel];
+      feedbackDiv.textContent = "⏰ Time's up! " + q.explanation + ' (You must restart!)';
+      feedbackDiv.className = 'feedback incorrect';
+      currentScore = 0;
+      setStatus();
+      const btns = optionsDiv.querySelectorAll('button');
+      btns.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correct) btn.classList.add('correct');
+      });
+      timerStatus.style.display = 'none';
+      show(restartBtn);
+    }
 
-        function $(id) { return document.getElementById(id); }
+    function restartQuiz() {
+      startQuiz();
+    }
 
-        function loadLeaderboard() {
-            const saved = localStorage.getItem('aiAndUsLeaderboard');
-            return saved ? JSON.parse(saved) : [];
-        }
+    function endGame() {
+      gameActive = false;
+      hide(optionsDiv);
+      hide(nextBtn);
+      hide(restartBtn);
+      hide(timerStatus);
+      progress.style.width = '100%';
+      questionDiv.innerHTML =
+        `<div style="font-size:1.5em; margin:10px 0;">🎉 Congratulations! 🎉</div>
+         <div style="margin:8px 0;">You've completed all levels!</div>
+         <strong>Final Score: ${currentScore} points</strong>`;
+      feedbackDiv.textContent = '';
+      setTimeout(() => {
+        let name = prompt("Enter your name for the leaderboard:") || "Anonymous";
+        updateLeaderboard(name, currentScore);
+        showLeaderboard();
+        show(restartBtn);
+      }, 600);
+    }
 
-        function saveLeaderboard(leaderboard) {
-            localStorage.setItem('aiAndUsLeaderboard', JSON.stringify(leaderboard));
-        }
-
-        function displayLeaderboard() {
-            const leaderboard = loadLeaderboard();
-            const leaderboardDiv = $('leaderboard');
-            const leaderboardList = $('leaderboardList');
-            if (leaderboard.length > 0) {
-                leaderboardDiv.style.display = 'block';
-                leaderboardList.innerHTML = leaderboard
-                    .sort((a, b) => b.score - a.score || b.level - a.level)
-                    .slice(0, 5)
-                    .map((entry, index) => `
-                        <div class="leaderboard-item">
-                            <span>${index + 1}. ${entry.name}</span>
-                            <span>Level ${entry.level} - ${entry.score || 0} pts</span>
-                        </div>
-                    `).join('');
-            }
-        }
-
-        function updateScoreDisplay() {
-            $('scoreDisplay').textContent = `Score: ${currentScore}`;
-        }
-
-        function startTimer() {
-            timeLeft = timeLimit;
-            updateTimerDisplay();
-            $('timerDisplay').style.display = 'inline-block';
-            $('timerDisplay').classList.remove('timer-warning');
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 10) {
-                    $('timerDisplay').classList.add('timer-warning');
-                }
-                if (timeLeft <= 0) {
-                    timeUp();
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            $('timerDisplay').textContent = `Time: ${timeLeft}s`;
-        }
-
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            $('timerDisplay').classList.remove('timer-warning');
-        }
-
-        function timeUp() {
-            if (!gameActive) return;
-            stopTimer();
-            gameActive = false;
-            const question = questions[currentLevel - 1];
-            const options = document.querySelectorAll('.option');
-            const feedback = $('feedback');
-            options.forEach(option => option.style.pointerEvents = 'none');
-            if (options[question.correct]) options[question.correct].classList.add('correct');
-            currentScore = 0;
-            updateScoreDisplay();
-            feedback.className = 'feedback incorrect';
-            feedback.innerHTML = `
-                <strong>⏰ Time's Up! Score reset to 0</strong><br>
-                The correct answer was: ${question.options[question.correct]}<br>
-                ${question.explanation}<br><br>
-                <strong>You must start over from Level 1!</strong>
-            `;
-            feedback.style.display = 'block';
-            $('restartBtn').style.display = 'inline-block';
-        }
-
-        function startQuiz() {
-            gameActive = true;
-            currentLevel = 1;
-            currentScore = 0;
-            $('startBtn').style.display = 'none';
-            $('options').style.display = 'grid';
-            updateScoreDisplay();
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            if (currentLevel > totalLevels) {
-                gameComplete();
-                return;
-            }
-            const question = questions[currentLevel - 1];
-            $('question').textContent = question.question;
-            $('levelDisplay').textContent = `Level ${currentLevel}`;
-            const progress = ((currentLevel - 1) / totalLevels) * 100;
-            $('progressBar').style.width = progress + '%';
-            const optionsDiv = $('options');
-            optionsDiv.innerHTML = '';
-            question.options.forEach((option, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-                optionDiv.textContent = option;
-                optionDiv.onclick = () => selectAnswer(index);
-                optionsDiv.appendChild(optionDiv);
-            });
-            $('feedback').style.display = 'none';
-            $('nextBtn').style.display = 'none';
-            $('restartBtn').style.display = 'none';
-            startTimer();
-        }
-
-        function selectAnswer(selectedIndex) {
-            if (!gameActive) return;
-            stopTimer();
-            const question = questions[currentLevel - 1];
-            const options = document.querySelectorAll('.option');
-            const feedback = $('feedback');
-            options.forEach(option => option.style.pointerEvents = 'none');
-            if (selectedIndex === question.correct) {
-                currentScore += pointsPerCorrectAnswer;
-                updateScoreDisplay();
-                options[selectedIndex].classList.add('correct');
-                feedback.className = 'feedback correct';
-                feedback.innerHTML = `
-                    <strong>✅ Correct! +${pointsPerCorrectAnswer} points</strong><br>
-                    ${question.explanation}
-                `;
-                feedback.style.display = 'block';
-                if (currentLevel < totalLevels) {
-                    $('nextBtn').style.display = 'inline-block';
-                } else {
-                    setTimeout(gameComplete, 1500);
-                }
-            } else {
-                currentScore = 0;
-                updateScoreDisplay();
-                options[selectedIndex].classList.add('incorrect');
-                if (options[question.correct]) options[question.correct].classList.add('correct');
-                feedback.className = 'feedback incorrect';
-                feedback.innerHTML = `
-                    <strong>❌ Wrong Answer! Score reset to 0</strong><br>
-                    ${question.explanation}<br><br>
-                    <strong>You must start over from Level 1!</strong>
-                `;
-                feedback.style.display = 'block';
-                $('restartBtn').style.display = 'inline-block';
-                gameActive = false;
-            }
-        }
-
-        function nextQuestion() {
-            currentLevel++;
-            const options = document.querySelectorAll('.option');
-            options.forEach(option => {
-                option.style.pointerEvents = 'auto';
-                option.classList.remove('correct', 'incorrect');
-            });
-            $('timerDisplay').style.display = 'none';
-            loadQuestion();
-        }
-
-        function restartGame() {
-            stopTimer();
-            currentLevel = 1;
-            currentScore = 0;
-            gameActive = true;
-            updateScoreDisplay();
-            $('timerDisplay').style.display = 'none';
-            const options = document.querySelectorAll('.option');
-            options.forEach(option => {
-                option.style.pointerEvents = 'auto';
-                option.classList.remove('correct', 'incorrect');
-            });
-            loadQuestion();
-        }
-
-        function gameComplete() {
-            stopTimer();
-            $('question').innerHTML = `
-                <div class="celebration">🎉 Congratulations! 🎉</div>
-                <br>You've completed all ${totalLevels} levels!<br>
-                <strong>Final Score: ${currentScore} points</strong><br>
-                <strong>You are now an AI Knowledge Expert!</strong>
-            `;
-            $('options').style.display = 'none';
-            $('feedback').style.display = 'none';
-            $('nextBtn').style.display = 'none';
-            $('timerDisplay').style.display = 'none';
-            $('progressBar').style.width = '100%';
-            const playerName = prompt("Enter your name for the leaderboard:") || "Anonymous";
-            const leaderboard = loadLeaderboard();
-            leaderboard.push({
-                name: playerName,
-                level: totalLevels,
-                score: currentScore,
-                timestamp: new Date().toISOString()
-            });
-            saveLeaderboard(leaderboard);
-            displayLeaderboard();
-            $('restartBtn').style.display = 'inline-block';
-            $('restartBtn').textContent = 'Play Again';
-        }
-
-        // Event listeners for buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            $('startBtn').onclick = startQuiz;
-            $('nextBtn').onclick = nextQuestion;
-            $('restartBtn').onclick = restartGame;
-            displayLeaderboard();
-        });
-    </script>
+    // --- Leaderboard ---
+    function loadLeaderboard() {
+      try {
+        return JSON.parse(localStorage.getItem('aiQuizLeaderboard') || '[]');
+      } catch { return []; }
+    }
+    function saveLeaderboard(data) {
+      try {
+        localStorage.setItem('aiQuizLeaderboard', JSON.stringify(data));
+      } catch {}
+    }
+    function updateLeaderboard(name, score) {
+      const board = loadLeaderboard();
+      board.push({ name, score });
+      board.sort((a,b)=>b.score-a.score);
+      saveLeaderboard(board.slice(0,5));
+    }
+    function showLeaderboard() {
+      const board = loadLeaderboard();
+      leaderboardList.innerHTML = board.length ? board.map((entry, i) =>
+        `<div class="leaderboard-item"><span>${i+1}. ${entry.name}</span><span>${entry.score}</span></div>`
+      ).join('') : "<div>No scores yet.</div>";
+      show(leaderboardDiv);
+    }
+    // Auto show leaderboard if any
+    document.addEventListener('DOMContentLoaded', showLeaderboard);
+  </script>
 </body>
 </html>
